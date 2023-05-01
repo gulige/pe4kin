@@ -15,7 +15,7 @@
 -export([start_link/3]).
 -export([start_http_poll/2, stop_http_poll/1,
          start_set_webhook/3, stop_set_webhook/1]).
--export([webhook_callback/3]).
+-export([webhook_callback/4]).
 -export([subscribe/2, unsubscribe/2, get_updates/2]).
 
 %% gen_server callbacks
@@ -55,42 +55,42 @@
                           limit => 1..100,
                           timeout => non_neg_integer()}) -> ok.
 start_http_poll(Bot, Opts) ->
-    gen_server:call(?MODULE, {start_http_poll, Bot, Opts}).
+    gen_server:call(get_reg_name(Bot), {start_http_poll, Bot, Opts}).
 
 -spec stop_http_poll(pe4kin:bot_name()) -> ok.
 stop_http_poll(Bot) ->
-    gen_server:call(?MODULE, {stop_http_poll, Bot}).
+    gen_server:call(get_reg_name(Bot), {stop_http_poll, Bot}).
 
 -spec start_set_webhook(pe4kin:bot_name(),
                         binary(),
                         #{certfile_id => integer()}) -> ok.
 start_set_webhook(Bot, UrlPrefix, Opts) ->
-    gen_server:call(?MODULE, {start_set_webhook, Bot, UrlPrefix, Opts}).
+    gen_server:call(get_reg_name(Bot), {start_set_webhook, Bot, UrlPrefix, Opts}).
 
 -spec stop_set_webhook(pe4kin:bot_name()) -> ok.
 stop_set_webhook(Bot) ->
-    gen_server:call(?MODULE, {stop_set_webhook, Bot}).
+    gen_server:call(get_reg_name(Bot), {stop_set_webhook, Bot}).
 
--spec webhook_callback(binary(), #{binary() => binary()}, binary()) -> ok.
-webhook_callback(Path, Query, Body) ->
-    gen_server:call(?MODULE, {webhook_callback, Path, Query, Body}).
+-spec webhook_callback(pe4kin:bot_name(), binary(), #{binary() => binary()}, binary()) -> ok.
+webhook_callback(Bot, Path, Query, Body) ->
+    gen_server:call(get_reg_name(Bot), {webhook_callback, Path, Query, Body}).
 
 
 -spec subscribe(pe4kin:bot_name(), pid()) -> ok | {error, process_already_subscribed}.
 subscribe(Bot, Pid) ->
-    gen_server:call(?MODULE, {subscribe, Bot, Pid}).
+    gen_server:call(get_reg_name(Bot), {subscribe, Bot, Pid}).
 
 -spec unsubscribe(pe4kin:bot_name(), pid()) -> ok | not_found.
 unsubscribe(Bot, Pid) ->
-    gen_server:call(?MODULE, {unsubscribe, Bot, Pid}).
+    gen_server:call(get_reg_name(Bot), {unsubscribe, Bot, Pid}).
 
 %% @doc Return not more than 'Limit' updates. May return empty list.
 -spec get_updates(pe4kin:bot_name(), pos_integer()) -> [pe4kin:update()].
 get_updates(Bot, Limit) ->
-    gen_server:call(?MODULE, {get_updates, Bot, Limit}).
+    gen_server:call(get_reg_name(Bot), {get_updates, Bot, Limit}).
 
 start_link(Bot, Token, Opts) ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [Bot, Token, Opts], []).
+    gen_server:start_link({local, get_reg_name(Bot)}, ?MODULE, [Bot, Token, Opts], []).
 
 
 init([Bot, Token, Opts]) ->
@@ -186,6 +186,9 @@ code_change(_OldVsn, State, _Extra) ->
 %%%
 %%% Internal functions
 %%%
+get_reg_name(BotName) ->
+    list_to_atom(atom_to_list(?MODULE) ++ "_" ++ binary_to_list(BotName)).
+
 activate_get_updates(#state{method=webhook, active=false} = State) ->
     State#state{active=true};
 activate_get_updates(#state{method=longpoll, active=false,
