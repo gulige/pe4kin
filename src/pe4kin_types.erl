@@ -108,7 +108,7 @@ message_type(#{<<"message_id">> := _, <<"migrate_to_chat_id">> := _}) -> migrate
 message_type(#{<<"message_id">> := _, <<"migrate_from_chat_id">> := _}) -> migrate_from_chat_id;
 message_type(#{<<"message_id">> := _, <<"pinned_message">> := _}) -> pinned_message;
 message_type(#{<<"message_id">> := _, <<"invoice">> := _}) -> invoice;
-message_type(#{<<"message_id">> := _, <<"successfull_payment">> := _}) -> successfull_payment;
+message_type(#{<<"message_id">> := _, <<"successful_payment">> := _}) -> successful_payment;
 message_type(#{<<"message_id">> := _, <<"connected_website">> := _}) -> connected_website;
 message_type(#{<<"message_id">> := _}) -> undefined.
 
