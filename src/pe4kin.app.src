@@ -1,22 +1,22 @@
 {application, pe4kin,
  [{description, "Telegram messenger bot API wrapper"},
-  {vsn, "0.2.2"},
+  {vsn, "0.2.4"},
   {registered, []},
   {mod, { pe4kin_app, []}},
   {applications,
    [kernel,
     stdlib,
-    pooler,
     gun
    ]},
   {env,
    [
     {api_server_endpoint, <<"https://api.telegram.org">>},
+    {http_tcp_opts, []},
+    {http_tls_opts, [{verify, verify_none}]},
     {keepalive_pool,
-     [{init_count, 1},
-      {max_count, 10},
-      {cull_interval, {1, min}},
-      {max_age, {2, min}}]}
+     #{max_count => 10,
+       checkout_retry => [500, 1000, 1500]}},
+    {tokens, #{}}
    ]},
   {modules, []},
 
