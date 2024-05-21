@@ -71,7 +71,7 @@ http_req_opts() ->
 await({async, Ref}) ->
     await(Ref);
 await(Ref) ->
-    case gun_pool:await(Ref, 30_000) of
+    case gun_pool:await(Ref, 30000) of
         {response, fin, Status, Headers} ->
             {Status, Headers, []};
         {response, nofin, Status, Headers} ->
